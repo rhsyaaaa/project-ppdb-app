@@ -1,7 +1,9 @@
 
 import 'package:go_router/go_router.dart';
+import 'package:ppdb_app/presentation/page/forgot_password.dart';
 import 'package:ppdb_app/presentation/page/home.dart';
 import 'package:ppdb_app/presentation/page/login.dart';
+import 'package:ppdb_app/presentation/page/profile.dart';
 import 'package:ppdb_app/presentation/page/register.dart';
 
 part 'rout_name.dart';
@@ -25,7 +27,11 @@ final appRoute = [
     GoRoute(
        path: "/forgot-password",
     name: Routes.forgotPassword,
-    builder: (context, state) => LoginPage(),
-
+    builder: (context, state) => ForgotPasswordPage(),
     ),
+    GoRoute(
+      path: "/profile",
+      name: Routes.profile,
+      builder: (context, state) => ProfilePage(),
+    )
 ];

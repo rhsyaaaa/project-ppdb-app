@@ -4,14 +4,14 @@ import 'package:ppdb_app/service/auth_service.dart';
  // pastikan pathnya benar sesuai projectmu
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+ RegisterPage({super.key});
 
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final Color primaryColor = const Color(0xFF0F5F3E);
+  final Color primaryColor = Color(0xFF0F5F3E);
 
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -68,31 +68,31 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 20),
+               SizedBox(height: 20),
                 Image.asset(
                   'assets/images/logoMQ-1.png',
                   height: 120,
                 ),
-                const SizedBox(height: 24),
-                const Text(
+               SizedBox(height: 24),
+               Text(
                   'Register Your Account',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                   ),
                 ),
-                const SizedBox(height: 8),
+               SizedBox(height: 8),
                 Text(
                   'Select method to register',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
-                const SizedBox(height: 24),
+               SizedBox(height: 24),
 
                 TextFormField(
                   controller: _emailController,
@@ -116,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+               SizedBox(height: 16),
 
                 TextFormField(
                   controller: _usernameController,
@@ -136,7 +136,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+               SizedBox(height: 16),
 
                 TextFormField(
                   controller: _passwordController,
@@ -160,21 +160,21 @@ class _RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 24),
+               SizedBox(height: 24),
 
                 SizedBox(
-                  width: double.infinity,
+                  width: 200,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     onPressed: _isLoading ? null : _register,
                     child: _isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
@@ -182,19 +182,19 @@ class _RegisterPageState extends State<RegisterPage> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
+                        : Text(
                             'Register',
                             style: TextStyle(color: Colors.white),
                           ),
                   ),
                 ),
 
-                const SizedBox(height: 16),
+               SizedBox(height: 16),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already an account? "),
+                   Text("Already an account? "),
                     GestureDetector(
                       onTap: () {
                         context.go('/login');
@@ -207,16 +207,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+               SizedBox(height: 20),
 
-                const Text('or register with'),
-                const SizedBox(height: 10),
+               Text('or register with'),
+               SizedBox(height: 10),
 
                 GestureDetector(
                   onTap: _isLoading ? null : _registerWithGoogle,
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.grey.shade300),
@@ -228,8 +228,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           'assets/images/Google Logo.png',
                           height: 20,
                         ),
-                        const SizedBox(width: 10),
-                        const Text('Sign In with Google'),
+                       SizedBox(width: 10),
+                       Text('Sign In with Google'),
                       ],
                     ),
                   ),
