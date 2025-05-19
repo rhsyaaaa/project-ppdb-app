@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "228475727893",
+    "project_id": "ppdb-app-45bc8",
+    "storage_bucket": "ppdb-app-45bc8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:228475727893:android:55311dee9d585b50985e1c",
+        "android_client_info": {
+          "package_name": "com.example.ppdb_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "228475727893-d088hes3vlqsrphcci9cbfjumqrupa6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANXClrH0kZMjut2uKMEVbPamluZ-UhdRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "228475727893-d088hes3vlqsrphcci9cbfjumqrupa6h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
