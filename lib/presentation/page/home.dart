@@ -1,11 +1,27 @@
-
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-  final Color primaryColor = Color(0xFF0F5F3E); // Hijau tua dari background
-  final Color cardColor = Colors.white;
-  final Color textColor = Colors.black87;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final Color primaryColor = Color(0xFF0F5F3E);
+  String userName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+
+    // Cek apakah displayName ada, kalau tidak gunakan email saja
+    setState(() {
+      userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +36,7 @@ class HomePage extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/images/masjid.png'), // Gambar sesuai di atas
+                    image: AssetImage('assets/images/masjid.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -68,7 +84,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Hai user !",
+                    "Hai $userName !",
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -85,25 +101,19 @@ class HomePage extends StatelessWidget {
                   ),
                   SizedBox(height: 30),
 
-                  // Tombol Pendaftaran
+                  // Tombol-tombol
                   CustomButton(
                     icon: Icons.edit,
                     text: "Pendaftaran",
                     onPressed: () {},
                   ),
-
                   SizedBox(height: 16),
-
-                  // Tombol Test
                   CustomButton(
                     icon: Icons.article,
                     text: "Test",
                     onPressed: () {},
                   ),
-
                   SizedBox(height: 16),
-
-                  // Tombol Hasil Test
                   CustomButton(
                     icon: Icons.fact_check,
                     text: "Hasil Test",

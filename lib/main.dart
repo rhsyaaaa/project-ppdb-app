@@ -7,11 +7,9 @@ import 'package:ppdb_app/core/routing/app_route.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-Future  main() async {
+Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -21,32 +19,42 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>( 
+    return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
-       builder: (context, snapshot) {
+      builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           final GoRouter customrouter = GoRouter(
             initialLocation: snapshot.data != null ? '/home' : '/login',
-            routes: appRoute
+            routes: appRoute,
+            redirect: (context, state) {
+              final isLoggedIn = snapshot.data != null;
+              final isInAuthPage =
+                  state.matchedLocation == '/login' ||
+                  state.matchedLocation == '/register';
+
+              if (!isLoggedIn && state.matchedLocation == '/home') {
+                return '/login';
+              }
+
+              if (isLoggedIn && isInAuthPage) {
+                return '/home';
+              }
+
+              return null;
+            },
           );
+
           return MaterialApp.router(
-            title:"simple_app",
+            title: "simple_app",
             debugShowCheckedModeBanner: false,
             routerConfig: customrouter,
-
           );
         } else {
           return MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(
-
-                ),
-              ),
-            ),
+            home: Scaffold(body: Center(child: CircularProgressIndicator())),
           );
         }
-      },);
-
+      },
+    );
   }
 }

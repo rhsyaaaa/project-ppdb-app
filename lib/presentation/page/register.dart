@@ -1,9 +1,66 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ppdb_app/service/auth_service.dart';
+ // pastikan pathnya benar sesuai projectmu
 
-class RegisterPage extends StatelessWidget {
-  final Color primaryColor = Color(0xFF0F5F3E); // warna hijau gelap
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final Color primaryColor = const Color(0xFF0F5F3E);
+
+  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
+  bool _isLoading = false;
+
+  final AuthService _authService = AuthService();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Panggil service register dengan email dan password
+    _authService.register(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+      context,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _registerWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    await _authService.sign_with_google(context);
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,148 +69,173 @@ class RegisterPage extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Logo Sekolah
-              SizedBox(height: 20),
-              Image.asset(
-                'assets/images/logoMQ-1.png', // Ganti dengan path logo sekolah
-                height: 120,
-              ),
-
-              SizedBox(height: 24),
-
-              // Judul
-              Text(
-                'Register Your Account',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                Image.asset(
+                  'assets/images/logoMQ-1.png',
+                  height: 120,
                 ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Select method to register',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-
-              SizedBox(height: 24),
-
-              // Input Email
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Gmail',
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                const SizedBox(height: 24),
+                const Text(
+                  'Register Your Account',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
                   ),
                 ),
-              ),
-              SizedBox(height: 16),
-
-              // Input Username
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Username',
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Select method to register',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
-              ),
-              SizedBox(height: 16),
+                const SizedBox(height: 24),
 
-              // Input Password
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 24),
-
-              // Tombol Register
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    hintText: 'Gmail',
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                  onPressed: () {
-                    // Aksi register
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email tidak boleh kosong';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Email tidak valid';
+                    }
+                    return null;
                   },
-                  child: Text('Register', style: TextStyle(color: Colors.white),),
                 ),
-              ),
+                const SizedBox(height: 16),
 
-              SizedBox(height: 16),
-
-              // Punya akun?
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Already an account? "),
-                  GestureDetector(
-                    onTap: () {
-                      // Navigasi ke halaman login
-                      context.go('/login');
-                    },
-                    child: Text(
-                      'Login here',
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                TextFormField(
+                  controller: _usernameController,
+                  decoration: InputDecoration(
+                    hintText: 'Username',
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
                     ),
                   ),
-                ],
-              ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Username tidak boleh kosong';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
 
-              SizedBox(height: 20),
-
-              // Atau login dengan Google
-              Text('or register with'),
-
-              SizedBox(height: 10),
-
-              GestureDetector(
-                onTap: () {
-                  // Google sign-in
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey.shade300),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/Google Logo.png', // Tambahkan logo Google
-                        height: 20,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Password tidak boleh kosong';
+                    }
+                    if (value.length < 6) {
+                      return 'Password minimal 6 karakter';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      SizedBox(width: 10),
-                      Text('Sign In with Google'),
-                    ],
+                    ),
+                    onPressed: _isLoading ? null : _register,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Register',
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 16),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Already an account? "),
+                    GestureDetector(
+                      onTap: () {
+                        context.go('/login');
+                      },
+                      child: Text(
+                        'Login here',
+                        style: TextStyle(
+                            color: primaryColor, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                const Text('or register with'),
+                const SizedBox(height: 10),
+
+                GestureDetector(
+                  onTap: _isLoading ? null : _registerWithGoogle,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/Google Logo.png',
+                          height: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('Sign In with Google'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
