@@ -56,7 +56,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                  SizedBox(height: 32),
                   Text(
-                    'Reset Password',
+                    'Forgot Password',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
@@ -86,30 +86,30 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                  SizedBox(height: 32),
                   SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: _isLoading ? null : _sendResetEmail,
-                      child: _isLoading
-                          ? SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              'Kirim Link Reset',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                  width: 200,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    ),
+                    onPressed: _isLoading ? null : _sendResetEmail,
+                    child: _isLoading
+                      ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                        ),
+                      )
+                      : Text(
+                        'Enter',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                  ),
                   ),
                  SizedBox(height: 16),
                 ],

@@ -1,10 +1,11 @@
-// ignore_for_file: unused_field, unused_local_variable
+// ignore_for_file: unused_local_variable, unused_field
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatefulWidget {
- HomePage({super.key});
+  HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -79,26 +80,41 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hai ${FirebaseAuth.instance.currentUser?.displayName ?? 'user'} !',
+                      'Hai ${userName} !',
                       style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                   SizedBox(height: 4),
-                   Text(
+                    SizedBox(height: 4),
+                    Text(
                       'Selamat datang di PPDB SMK MQ 👋',
                       style: TextStyle(fontSize: 14, color: Colors.white70),
                     ),
-                   SizedBox(height: 30),
-                   CustomButton(icon: Icons.edit, text: 'Pendaftaran'),
-                   SizedBox(height: 16),
-                   CustomButton(icon: Icons.article, text: 'Test'),
-                   SizedBox(height: 16),
-                   CustomButton(
+                    SizedBox(height: 30),
+                    CustomButton(
+                      icon: Icons.edit,
+                      text: 'Pendaftaran',
+                      onTap: () {
+                        context.go('/pendaftaran');
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    CustomButton(
+                      icon: Icons.article,
+                      text: 'Test',
+                      // onTap: () {
+                      //   context.go('/pendaftaran');
+                      // },
+                    ),
+                    SizedBox(height: 16),
+                    CustomButton(
                       icon: Icons.fact_check,
                       text: 'Hasil Test',
+                      // onTap: () {
+                      //   context.go('/pendaftaran');
+                      // },
                     ),
                   ],
                 ),
@@ -120,36 +136,31 @@ class _HomePageState extends State<HomePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-        IconButton(
-          icon: Icon(
-            Icons.image_outlined,
-            color: Colors.black54,
-            size: 26,
-          ),
-          onPressed: () => setState(() => _selectedIndex = 0),
-          padding: EdgeInsets.zero,
-          constraints: BoxConstraints(),
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.home,
-            color: primaryColor,
-            size: 26,
-          ),
-          onPressed: () => setState(() => _selectedIndex = 1),
-          padding: EdgeInsets.zero,
-          constraints: BoxConstraints(),
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.person_outline,
-            color: Colors.black54,
-            size: 26,
-          ),
-          onPressed: () => setState(() => _selectedIndex = 2),
-          padding: EdgeInsets.zero,
-          constraints: BoxConstraints(),
-        ),
+            IconButton(
+              icon: Icon(Icons.image_outlined, color: Colors.black54, size: 26),
+              onPressed: () {
+                setState(() => _selectedIndex = 0);
+              },
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
+            IconButton(
+              icon: Icon(Icons.home, color: primaryColor, size: 26),
+              onPressed: () {
+                setState(() => _selectedIndex = 1);
+              } ,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
+            IconButton(
+              icon: Icon(Icons.person_outline, color: Colors.black54, size: 26),
+              onPressed: () {
+                setState(() => _selectedIndex = 2);
+                context.go('/profile');
+              },
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
           ],
         ),
       ),
@@ -160,32 +171,31 @@ class _HomePageState extends State<HomePage> {
 class CustomButton extends StatelessWidget {
   final IconData icon;
   final String text;
+  final VoidCallback? onTap;
 
- CustomButton({super.key, required this.icon, required this.text});
+  CustomButton({super.key, required this.icon, required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-      // TODO: Tambahkan aksi navigasi sesuai kebutuhan
-      },
+      onPressed: onTap,
       style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black87,
-      elevation: 2,
-      padding: EdgeInsets.symmetric(vertical: 28, horizontal: 28),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 2,
+        padding: EdgeInsets.symmetric(vertical: 28, horizontal: 28),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, size: 32, color: Colors.black87),
-        SizedBox(width: 28),
-        Text(
-        text,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ],
+        children: [
+          Icon(icon, size: 32, color: Colors.black87),
+          SizedBox(width: 28),
+          Text(
+            text,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }

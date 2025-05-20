@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ppdb_app/service/auth_service.dart';
- // pastikan pathnya benar sesuai projectmu
 
 class RegisterPage extends StatefulWidget {
- RegisterPage({super.key});
+  RegisterPage({super.key});
 
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -12,13 +11,10 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final Color primaryColor = Color(0xFF0F5F3E);
-
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
-
   bool _isLoading = false;
 
   final AuthService _authService = AuthService();
@@ -38,10 +34,10 @@ class _RegisterPageState extends State<RegisterPage> {
       _isLoading = true;
     });
 
-    // Panggil service register dengan email dan password
     _authService.register(
       _emailController.text.trim(),
       _passwordController.text.trim(),
+      _usernameController.text.trim(),
       context,
     );
 
@@ -74,93 +70,53 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-               SizedBox(height: 20),
+                SizedBox(height: 20),
                 Image.asset(
                   'assets/images/logoMQ-1.png',
                   height: 120,
                 ),
-               SizedBox(height: 24),
-               Text(
+                SizedBox(height: 24),
+                Text(
                   'Register Your Account',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
-               SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   'Select method to register',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
-               SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    hintText: 'Gmail',
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                  decoration: _inputDecoration('Gmail'),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Email tidak boleh kosong';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Email tidak valid';
-                    }
+                    if (value == null || value.isEmpty) return 'Email tidak boleh kosong';
+                    if (!value.contains('@')) return 'Email tidak valid';
                     return null;
                   },
                 ),
-               SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 TextFormField(
                   controller: _usernameController,
-                  decoration: InputDecoration(
-                    hintText: 'Username',
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Username tidak boleh kosong';
-                    }
-                    return null;
-                  },
+                  decoration: _inputDecoration('Username'),
+                  validator: (value) => value == null || value.isEmpty ? 'Username tidak boleh kosong' : null,
                 ),
-               SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: 'Password',
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                  decoration: _inputDecoration('Password'),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password tidak boleh kosong';
-                    }
-                    if (value.length < 6) {
-                      return 'Password minimal 6 karakter';
-                    }
+                    if (value == null || value.isEmpty) return 'Password tidak boleh kosong';
+                    if (value.length < 6) return 'Password minimal 6 karakter';
                     return null;
                   },
                 ),
-               SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 SizedBox(
                   width: 200,
@@ -174,43 +130,29 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     onPressed: _isLoading ? null : _register,
                     child: _isLoading
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            'Register',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                        ? CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                        : Text('Register', style: TextStyle(color: Colors.white)),
                   ),
                 ),
-
-               SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                   Text("Already an account? "),
+                    Text("Already have an account? "),
                     GestureDetector(
-                      onTap: () {
-                        context.go('/login');
-                      },
+                      onTap: () => context.go('/login'),
                       child: Text(
                         'Login here',
-                        style: TextStyle(
-                            color: primaryColor, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
                 ),
-               SizedBox(height: 20),
+                SizedBox(height: 20),
 
-               Text('or register with'),
-               SizedBox(height: 10),
+                Text('or register with'),
+                SizedBox(height: 10),
 
                 GestureDetector(
                   onTap: _isLoading ? null : _registerWithGoogle,
@@ -224,12 +166,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          'assets/images/Google Logo.png',
-                          height: 20,
-                        ),
-                       SizedBox(width: 10),
-                       Text('Sign In with Google'),
+                        Image.asset('assets/images/Google Logo.png', height: 20),
+                        SizedBox(width: 10),
+                        Text('Sign In with Google'),
                       ],
                     ),
                   ),
@@ -241,4 +180,14 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
+
+  InputDecoration _inputDecoration(String hint) => InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.grey[200],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      );
 }

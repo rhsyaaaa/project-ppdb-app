@@ -38,22 +38,30 @@ class AuthService {
   void register(
     String emailAddress,
     String password,
+    String displayName,
     BuildContext context,
   ) async {
     try {
-      // Mendaftarkan pengguna dengan email dan password
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailAddress,
             password: password,
           );
 
-      // Tampilkan pesan sukses
+      await credential.user?.updateDisplayName(displayName);
+
+      await credential.user?.reload();
+
+      final user = FirebaseAuth.instance.currentUser;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration successful! Welcome to Home.')),
+        SnackBar(
+          content: Text(
+            'Registration successful! Welcome ${user?.displayName ?? 'user'}',
+          ),
+        ),
       );
 
-      // Navigasi langsung ke halaman HomePage
       context.go('/home');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -93,12 +101,13 @@ class AuthService {
     ).showSnackBar(SnackBar(content: Text('Logout successful!')));
   }
 
- Future sign_with_google(BuildContext context) async {
+  Future sign_with_google(BuildContext context) async {
     if (kIsWeb) {
       GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
-      googleProvider
-          .addScope('https://www.googleapis.com/auth/contacts.readonly');
+      googleProvider.addScope(
+        'https://www.googleapis.com/auth/contacts.readonly',
+      );
       googleProvider.setCustomParameters({'login_hint': 'user@example.com'});
       await FirebaseAuth.instance.signInWithPopup(googleProvider);
       context.goNamed(Routes.home);
@@ -120,5 +129,4 @@ class AuthService {
       context.goNamed(Routes.home);
     }
   }
-  
 }

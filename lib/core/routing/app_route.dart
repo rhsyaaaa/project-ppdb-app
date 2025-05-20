@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ppdb_app/presentation/page/forgot_password.dart';
 import 'package:ppdb_app/presentation/page/home.dart';
 import 'package:ppdb_app/presentation/page/login.dart';
+import 'package:ppdb_app/presentation/page/pendaftaran.dart';
 import 'package:ppdb_app/presentation/page/profile.dart';
 import 'package:ppdb_app/presentation/page/register.dart';
 
@@ -33,5 +34,10 @@ final appRoute = [
       path: "/profile",
       name: Routes.profile,
       builder: (context, state) => ProfilePage(),
+    ),
+    GoRoute(
+      path: "/pendaftaran",
+      name: Routes.pendaftaran,
+      builder: (context, state) => PendaftaranPage(),
     )
 ];

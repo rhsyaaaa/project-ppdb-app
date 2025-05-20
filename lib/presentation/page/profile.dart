@@ -1,14 +1,36 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
   final User? user = FirebaseAuth.instance.currentUser;
+  final Color primaryColor = const Color(0xFF0F5F3E);
+  int _selectedIndex = 2;
 
-  ProfilePage({super.key});
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 0) {
+      context.go('/gambar'); // Ganti dengan route halaman gambar kamu
+    } else if (index == 1) {
+      context.go('/home');
+    } else if (index == 2) {
+      context.go('/profile');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    String userName= user?.displayName ?? 'Your account';
+    String userName = user?.displayName ?? 'Your account';
     String email = user?.email ?? 'your@email.com';
 
     return Scaffold(
@@ -17,14 +39,14 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Color(0xFF0F5F3E)),
-          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back, color: primaryColor),
+          onPressed: () => context.go('/home'),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
-              backgroundImage: AssetImage('assets/images/logo.png'), // Ganti dengan logo kamu
+              backgroundImage: AssetImage('assets/images/logoMQ-1.png'),
               radius: 18,
               backgroundColor: Colors.transparent,
             ),
@@ -38,8 +60,8 @@ class ProfilePage extends StatelessWidget {
           // Profile Picture
           CircleAvatar(
             radius: 60,
-            backgroundColor: Color(0xFF0F5F3E),
-            child: Icon(Icons.person, color: Colors.white, size: 70),
+            backgroundColor: primaryColor,
+            child: const Icon(Icons.person, color: Colors.white, size: 70),
           ),
 
           const SizedBox(height: 32),
@@ -75,18 +97,61 @@ class ProfilePage extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+              if (!mounted) return;
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/login', (route) => false);
             },
-            icon: Icon(Icons.logout),
-            label: Text("Logout"),
+            icon: const Icon(Icons.logout, color: Colors.white,), 
+            label: const Text("Logout"),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF0F5F3E),
+              backgroundColor: primaryColor,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
           ),
         ],
+      ),
+
+      // Bottom Navigation Bar
+      bottomNavigationBar: Container(
+        height: 44,
+        margin: const EdgeInsets.symmetric(horizontal: 100, vertical: 16),
+        decoration: BoxDecoration(
+          color: primaryColor,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: Icon(Icons.image_outlined,
+                  color: _selectedIndex == 0 ? Colors.white : Colors.black54,
+                  size: 26),
+              onPressed: () => _onItemTapped(0),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            IconButton(
+              icon: Icon(Icons.home_outlined,
+                  color: _selectedIndex == 1 ? Colors.white : Colors.black54,
+                  size: 26),
+              onPressed: () => _onItemTapped(1),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            IconButton(
+              icon: Icon(Icons.person,
+                  color: _selectedIndex == 2 ? Colors.white : Colors.black54,
+                  size: 26),
+              onPressed: () => _onItemTapped(2),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
       ),
     );
   }
