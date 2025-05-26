@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:image_picker_web/image_picker_web.dart';
-import 'package:ppdb_app/core/models/pendaftaran_model.dart';
+import 'package:ppdb_app/core/models/pendaftaran_models.dart';
+import 'package:ppdb_app/service/siswa_service.dart';
 import 'package:ppdb_app/service/upload_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -88,67 +89,58 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
   }
 
   Future<bool> submitForm() async {
-    if (!_formKey.currentState!.validate()) return false;
+  if (!_formKey.currentState!.validate()) return false;
 
-    if (fileUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Silakan unggah berkas terlebih dahulu')),
-      );
-      return false;
-    }
-
-    final pendaftar = Pendaftar(
-      nama: namaController.text,
-      nis: nisController.text,
-      nisn: nisnController.text,
-      nik: nikController.text,
-      tempatLahir: tempatLahirController.text,
-      tanggalLahir: tanggalLahirController.text,
-      jenisKelamin: jenisKelamin ?? '',
-      asalSekolah: asalSekolahController.text,
-      noTelpSiswa: noTelpSiswaController.text,
-      alamatSiswa: alamatSiswaController.text,
-      namaAyah: namaAyahController.text,
-      namaIbu: namaIbuController.text,
-      pekerjaanAyah: pekerjaanAyahController.text,
-      pekerjaanIbu: pekerjaanIbuController.text,
-      noTelpOrtu: noTelpOrtuController.text,
-      alamatOrtu: alamatOrtuController.text,
-      tahunAjaran: tahunAjaranController.text,
-      sudahVerifikasi: sudahVerifikasi,
-      sudahWawancara: sudahWawancara,
-      uploadBerkas: fileUrl != null,
+  if (fileUrl == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Silakan unggah berkas terlebih dahulu')),
     );
-
-    setState(() => isLoading = true);
-
-    try {
-      final response = await http.post(
-        Uri.parse('http://172.30.176.1:2025/pendaftar/daftar-siswa'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(pendaftar.toJson()),
-      );
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Berhasil mendaftarkan siswa!')));
-        return true;
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal: ${response.body}')));
-        return false;
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      return false;
-    } finally {
-      setState(() => isLoading = false);
-    }
+    return false;
   }
+
+  final pendaftar = Pendaftar(
+    nama: namaController.text,
+    nis: nisController.text,
+    nisn: nisnController.text,
+    nik: nikController.text,
+    tempatLahir: tempatLahirController.text,
+    tanggalLahir: tanggalLahirController.text,
+    jenisKelamin: jenisKelamin ?? '',
+    asalSekolah: asalSekolahController.text,
+    noTelpSiswa: noTelpSiswaController.text,
+    alamatSiswa: alamatSiswaController.text,
+    namaAyah: namaAyahController.text,
+    namaIbu: namaIbuController.text,
+    pekerjaanAyah: pekerjaanAyahController.text,
+    pekerjaanIbu: pekerjaanIbuController.text,
+    noTelpOrtu: noTelpOrtuController.text,
+    alamatOrtu: alamatOrtuController.text,
+    tahunAjaran: tahunAjaranController.text,
+    sudahVerifikasi: sudahVerifikasi,
+    sudahWawancara: sudahWawancara,
+    uploadBerkas: fileUrl != null,
+  );
+
+  setState(() => isLoading = true);
+
+  final service = SiswaService();
+  final success = await service.daftarSiswa(pendaftar);
+
+  if (!mounted) return false;
+
+  if (success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Berhasil mendaftarkan siswa!')),
+    );
+    return true;
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Gagal mendaftarkan siswa')),
+    );
+    return false;
+  }
+}
+
 
   Widget buildTextField(
     String hint,
@@ -156,7 +148,7 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
     bool isNumber = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4),
       child: TextFormField(
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
@@ -179,7 +171,13 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
         Align(
           alignment: Alignment.topLeft,
           child: IconButton(
-            onPressed: currentPage == 0 ? null : previousPage,
+            onPressed: () {
+              if (currentPage == 0) {
+          GoRouter.of(context).go('/home');
+              } else {
+          previousPage();
+              }
+            },
             icon: Icon(Icons.arrow_back, color: Colors.white),
           ),
         ),
@@ -220,7 +218,7 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
             physics: NeverScrollableScrollPhysics(),
             children: [
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24),
                 child: buildPageContent(
                   child: Column(
                     children: [
@@ -274,7 +272,7 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24),
                 child: buildPageContent(
                   child: Column(
                     children: [
@@ -308,7 +306,7 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24),
                 child: buildPageContent(
                   child: Column(
                     children: [

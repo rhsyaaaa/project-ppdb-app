@@ -104,9 +104,9 @@ class _HomePageState extends State<HomePage> {
                     CustomButton(
                       icon: Icons.article,
                       text: 'Test',
-                      // onTap: () {
-                      //   context.go('/pendaftaran');
-                      // },
+                      onTap: () {
+                        context.go('/test');
+                      },
                     ),
                     SizedBox(height: 16),
                     CustomButton(

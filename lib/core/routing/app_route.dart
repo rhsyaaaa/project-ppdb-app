@@ -6,6 +6,7 @@ import 'package:ppdb_app/presentation/page/login.dart';
 import 'package:ppdb_app/presentation/page/pendaftaran.dart';
 import 'package:ppdb_app/presentation/page/profile.dart';
 import 'package:ppdb_app/presentation/page/register.dart';
+import 'package:ppdb_app/presentation/page/test.dart';
 
 part 'rout_name.dart';
 
@@ -39,5 +40,10 @@ final appRoute = [
       path: "/pendaftaran",
       name: Routes.pendaftaran,
       builder: (context, state) => PendaftaranPage(),
-    )
+    ),
+    GoRoute(
+      path: '/test',
+      name: Routes.test,
+      builder: (context, state) => TestPage(),
+      )
 ];
