@@ -1,21 +1,28 @@
+// ignore_for_file: unused_import
+
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:ppdb_app/core/models/pendaftaran_model.dart';
+import 'package:ppdb_app/service/upload_service.dart';
+import 'package:go_router/go_router.dart';
 
 class PendaftaranPage extends StatefulWidget {
-  PendaftaranPage({super.key});
-
   @override
   State<PendaftaranPage> createState() => _PendaftaranPageState();
 }
 
 class _PendaftaranPageState extends State<PendaftaranPage> {
   final _formKey = GlobalKey<FormState>();
-  final Color primaryColor =  Color(0xFF0F5F3E);
+  final PageController _pageController = PageController();
+  int currentPage = 0;
 
-  // Controllers untuk data siswa
+  final Color primaryColor = Color(0xFF0F5F3E);
+  bool isLoading = false;
+
+  // Controllers siswa
   final namaController = TextEditingController();
   final nisController = TextEditingController();
   final nisnController = TextEditingController();
@@ -25,8 +32,9 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
   final asalSekolahController = TextEditingController();
   final alamatSiswaController = TextEditingController();
   final noTelpSiswaController = TextEditingController();
+  String? jenisKelamin;
 
-  // Controllers untuk data orang tua
+  // Controllers orang tua
   final namaAyahController = TextEditingController();
   final namaIbuController = TextEditingController();
   final pekerjaanAyahController = TextEditingController();
@@ -34,82 +42,126 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
   final alamatOrtuController = TextEditingController();
   final noTelpOrtuController = TextEditingController();
 
-  // Tahun ajaran
   final tahunAjaranController = TextEditingController();
-
-  // Pilihan dan status
-  String? jenisKelamin;
   bool sudahVerifikasi = false;
   bool sudahWawancara = false;
   bool uploadBerkas = false;
+  Uint8List? fileBytes;
+  String? fileUrl;
 
-  bool isLoading = false;
+  Future<void> pickFile() async {
+    final pickedFile = await ImagePickerWeb.getImageAsBytes();
+    if (pickedFile != null) {
+      setState(() => fileBytes = pickedFile);
+      final url = await UploadService().uploadImage(fileBytes!);
+      if (url != null) {
+        setState(() {
+          uploadBerkas = true;
+          fileUrl = url;
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload gagal')));
+      }
+    }
+  }
 
-  Future<void> submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+  void nextPage() {
+    if (currentPage < 2) {
+      _pageController.nextPage(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
+      setState(() => currentPage++);
+    }
+  }
+
+  void previousPage() {
+    if (currentPage > 0) {
+      _pageController.previousPage(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
+      setState(() => currentPage--);
+    }
+  }
+
+  Future<bool> submitForm() async {
+    if (!_formKey.currentState!.validate()) return false;
+
+    if (fileUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Silakan unggah berkas terlebih dahulu')),
+      );
+      return false;
+    }
 
     final pendaftar = Pendaftar(
-      nama: namaController.text.trim(),
-      nis: nisController.text.trim(),
-      nisn: nisnController.text.trim(),
-      nik: nikController.text.trim(),
-      tempatLahir: tempatLahirController.text.trim(),
-      tanggalLahir: tanggalLahirController.text.trim(),
+      nama: namaController.text,
+      nis: nisController.text,
+      nisn: nisnController.text,
+      nik: nikController.text,
+      tempatLahir: tempatLahirController.text,
+      tanggalLahir: tanggalLahirController.text,
       jenisKelamin: jenisKelamin ?? '',
-      asalSekolah: asalSekolahController.text.trim(),
-      noTelpSiswa: noTelpSiswaController.text.trim(),
-      alamatSiswa: alamatSiswaController.text.trim(),
-      namaAyah: namaAyahController.text.trim(),
-      namaIbu: namaIbuController.text.trim(),
-      pekerjaanAyah: pekerjaanAyahController.text.trim(),
-      pekerjaanIbu: pekerjaanIbuController.text.trim(),
-      noTelpOrtu: noTelpOrtuController.text.trim(),
-      alamatOrtu: alamatOrtuController.text.trim(),
-      tahunAjaran: tahunAjaranController.text.trim(),
+      asalSekolah: asalSekolahController.text,
+      noTelpSiswa: noTelpSiswaController.text,
+      alamatSiswa: alamatSiswaController.text,
+      namaAyah: namaAyahController.text,
+      namaIbu: namaIbuController.text,
+      pekerjaanAyah: pekerjaanAyahController.text,
+      pekerjaanIbu: pekerjaanIbuController.text,
+      noTelpOrtu: noTelpOrtuController.text,
+      alamatOrtu: alamatOrtuController.text,
+      tahunAjaran: tahunAjaranController.text,
       sudahVerifikasi: sudahVerifikasi,
       sudahWawancara: sudahWawancara,
-      uploadBerkas: uploadBerkas,
+      uploadBerkas: fileUrl != null,
     );
-
-    final url = Uri.parse('http://172.30.176.1:2025/pendaftar/daftar-siswa');
 
     setState(() => isLoading = true);
 
     try {
       final response = await http.post(
-        url,
+        Uri.parse('http://172.30.176.1:2025/pendaftar/daftar-siswa'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(pendaftar.toJson()),
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Pendaftaran berhasil")),
-        );
-        Navigator.pop(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Berhasil mendaftarkan siswa!')));
+        return true;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal: ${response.body}")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal: ${response.body}')));
+        return false;
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Terjadi kesalahan: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      return false;
     } finally {
       setState(() => isLoading = false);
     }
   }
 
-  Widget buildTextField(String hint, TextEditingController controller,
-      {bool isNumber = false}) {
+  Widget buildTextField(
+    String hint,
+    TextEditingController controller, {
+    bool isNumber = false,
+  }) {
     return Padding(
-      padding:  EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: TextFormField(
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Wajib diisi' : null,
+        validator:
+            (value) => value == null || value.isEmpty ? 'Wajib diisi' : null,
         decoration: InputDecoration(
           hintText: hint,
           filled: true,
@@ -120,133 +172,240 @@ class _PendaftaranPageState extends State<PendaftaranPage> {
     );
   }
 
-  Widget buildCheckbox(String label, bool value, Function(bool?) onChanged) {
-  return CheckboxListTile(
-    value: value,
-    onChanged: onChanged,
-    title: Text(
-      label,
-      style: TextStyle(
-        color: Colors.black, // Warna teks hitam
-        fontSize: 16,
-      ),
-    ),
-    activeColor: primaryColor,   
-    checkColor: Colors.white,    
-    controlAffinity: ListTileControlAffinity.leading,
-    contentPadding: EdgeInsets.zero,
-    tileColor: Colors.white,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(8),
-    ),
-  );
-}
-
+  Widget buildPageContent({required Widget child}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.topLeft,
+          child: IconButton(
+            onPressed: currentPage == 0 ? null : previousPage,
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+          ),
+        ),
+        Center(child: Image.asset('assets/images/smkmq.png', height: 100)),
+        SizedBox(height: 10),
+        Center(
+          child: Text(
+            'Pendaftaran',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        SizedBox(height: 4),
+        Center(
+          child: Text(
+            'Silahkan masukkan data',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+        SizedBox(height: 16),
+        Expanded(child: SingleChildScrollView(child: child)),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: primaryColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding:  EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                Image.asset('assets/images/smkmq.png', height: 100),
-                SizedBox(height: 10),
-                Text(
-                  'Pendaftaran',
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-                Text(
-                  'Silahkan masukkan data diri Siswa & Orang tua',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70),
-                ),
-                SizedBox(height: 16),
-
-                // Data siswa
-                buildTextField("Nama siswa", namaController),
-                buildTextField("NIS", nisController),
-                buildTextField("NISN", nisnController),
-                buildTextField("NIK", nikController),
-                buildTextField("Tempat lahir", tempatLahirController),
-                buildTextField("Tanggal lahir", tanggalLahirController),
-                buildTextField("Asal sekolah", asalSekolahController),
-                buildTextField("Alamat siswa", alamatSiswaController),
-                buildTextField("No Telp siswa", noTelpSiswaController, isNumber: true),
-                DropdownButtonFormField<String>(
-                  value: jenisKelamin,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  hint:  Text("Pilih jenis kelamin"),
-                  items: ['Laki-laki', 'Perempuan']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (value) => setState(() => jenisKelamin = value),
-                  validator: (value) =>
-                      value == null ? 'Jenis kelamin harus dipilih' : null,
-                ),
-
-                SizedBox(height: 20),
-
-                // Data orang tua
-                buildTextField("Nama Ayah", namaAyahController),
-                buildTextField("Nama Ibu", namaIbuController),
-                buildTextField("Pekerjaan Ayah", pekerjaanAyahController),
-                buildTextField("Pekerjaan Ibu", pekerjaanIbuController),
-                buildTextField("Alamat orang tua", alamatOrtuController),
-                buildTextField("No Telp orang tua", noTelpOrtuController,
-                    isNumber: true),
-
-                // Tahun ajaran
-                buildTextField("Tahun Ajaran (misal: 2024/2025)", tahunAjaranController),
-                SizedBox(height: 12),
-                // Checkbox status
-                buildCheckbox("Sudah Verifikasi", sudahVerifikasi,
-                    (val) => setState(() => sudahVerifikasi = val!)),
-                    SizedBox(height: 12,),
-                buildCheckbox("Sudah Wawancara", sudahWawancara,
-                    (val) => setState(() => sudahWawancara = val!)),
-                    SizedBox(height: 12,),
-                buildCheckbox("Upload Berkas", uploadBerkas,
-                    (val) => setState(() => uploadBerkas = val!)),
-
-                SizedBox(height: 24),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                  width: 200,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : submitForm,
-                    style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: primaryColor,
-                    padding:  EdgeInsets.symmetric(vertical: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    ),
-                    child: isLoading
-                      ?  CircularProgressIndicator()
-                      :  Text('Daftar'),
-                  ),
+        child: Form(
+          key: _formKey,
+          child: PageView(
+            controller: _pageController,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: buildPageContent(
+                  child: Column(
+                    children: [
+                      buildTextField("Masukkan nama siswa", namaController),
+                      buildTextField("Masukkan NIS siswa", nisController),
+                      buildTextField("Masukkan NISN siswa", nisnController),
+                      buildTextField("Masukkan NIK siswa", nikController),
+                      buildTextField("Tempat lahir", tempatLahirController),
+                      buildTextField("Tanggal lahir", tanggalLahirController),
+                      buildTextField("Asal sekolah", asalSekolahController),
+                      DropdownButtonFormField<String>(
+                        value: jenisKelamin,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        hint: Text("Jenis kelamin"),
+                        items:
+                            ['Laki-laki', 'Perempuan']
+                                .map(
+                                  (e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Text(e),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (val) => setState(() => jenisKelamin = val),
+                        validator:
+                            (val) => val == null ? 'Harus dipilih' : null,
+                      ),
+                      buildTextField("Alamat rumah", alamatSiswaController),
+                      buildTextField(
+                        "No tlpn",
+                        noTelpSiswaController,
+                        isNumber: true,
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: nextPage,
+                        child: Text('Lanjutkan'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: primaryColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: buildPageContent(
+                  child: Column(
+                    children: [
+                      buildTextField("Masukan nama Ayah", namaAyahController),
+                      buildTextField("Masukan nama Ibu", namaIbuController),
+                      buildTextField(
+                        "Masukan pekerjaan Ayah",
+                        pekerjaanAyahController,
+                      ),
+                      buildTextField(
+                        "Masukan pekerjaan Ibu",
+                        pekerjaanIbuController,
+                      ),
+                      buildTextField("Alamat Orang Tua", alamatOrtuController),
+                      buildTextField(
+                        "No telpon Orang Tua",
+                        noTelpOrtuController,
+                        isNumber: true,
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: nextPage,
+                        child: Text('Upload berkas'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: buildPageContent(
+                  child: Column(
+                    children: [
+                      buildTextField(
+                        "Tahun ajaran (Misal : 2024/2025)",
+                        tahunAjaranController,
+                      ),
+                      SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: pickFile,
+                          child: Text(
+                            fileUrl != null
+                                ? 'Berkas terunggah'
+                                : 'Upload Berkas',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: primaryColor,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: CheckboxListTile(
+                          value: sudahVerifikasi,
+                          onChanged:
+                              (val) => setState(
+                                () => sudahVerifikasi = val ?? false,
+                              ),
+                          title: Text(
+                            'Sudah Verifikasi',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: CheckboxListTile(
+                          value: sudahWawancara,
+                          onChanged:
+                              (val) =>
+                                  setState(() => sudahWawancara = val ?? false),
+                          title: Text(
+                            'Sudah Wawancara',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed:
+                            isLoading
+                                ? null
+                                : () async {
+                                  final success = await submitForm();
+                                  if (mounted && success) {
+                                    GoRouter.of(context).go('/home');
+                                  }
+                                },
+
+                        child:
+                            isLoading
+                                ? CircularProgressIndicator()
+                                : Text('Daftar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
-    );  
+    );
   }
 }
