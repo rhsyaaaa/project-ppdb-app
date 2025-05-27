@@ -1,8 +1,9 @@
-// ignore_for_file: unused_local_variable, unused_field
+// ignore_for_file: unused_local_variable, unused_field, unused_import
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ppdb_app/service/siswa_service.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -14,6 +15,33 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 1;
   final Color primaryColor = Color(0xFF0F5F3E);
+
+  @override
+  void initState() {
+    super.initState();
+    cekStatusSiswa();
+  }
+
+  // Fungsi cek status siswa dan redirect ke halaman /test jika sudah terdaftar
+  void cekStatusSiswa() async {
+  final siswaService = SiswaService();
+  final idSiswa = await siswaService.getCurrentIdSiswa();
+
+  if (idSiswa != null) {
+    final terdaftar = await siswaService.cekSiswaTerdaftar(idSiswa);
+    if (terdaftar) {
+      if (mounted) {
+        // Kirim idSiswa juga lewat query parameter
+        context.go('/test?id=$idSiswa');
+      }
+    } else {
+      print('ID siswa ditemukan tapi tidak valid/terdaftar di backend');
+    }
+  } else {
+    print('Belum ada ID siswa tersimpan di SharedPreferences');
+  }
+}
+
 
   String getUserName() {
     final user = FirebaseAuth.instance.currentUser;
@@ -80,7 +108,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hai ${userName} !',
+                      'Hai $userName !',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -104,16 +132,44 @@ class _HomePageState extends State<HomePage> {
                     CustomButton(
                       icon: Icons.article,
                       text: 'Test',
-                      onTap: () {
-                        context.go('/test');
+                      onTap: () async {
+                        final siswaService = SiswaService();
+                        final idSiswa = await siswaService.getCurrentIdSiswa();
+
+                        if (idSiswa != null) {
+                          final terdaftar = await siswaService
+                              .cekSiswaTerdaftar(idSiswa);
+
+                          if (terdaftar) {
+                            // Kirim idSiswa lewat query parameter saat navigasi ke test page
+                            context.go('/test?id=$idSiswa');
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Siswa belum terdaftar. Silakan daftar terlebih dahulu.',
+                                ),
+                              ),
+                            );
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'ID siswa tidak ditemukan. Silakan daftar terlebih dahulu.',
+                              ),
+                            ),
+                          );
+                        }
                       },
                     ),
+
                     SizedBox(height: 16),
                     CustomButton(
                       icon: Icons.fact_check,
                       text: 'Hasil Test',
                       // onTap: () {
-                      //   context.go('/pendaftaran');
+                      //   context.go('/hasil-test');
                       // },
                     ),
                   ],
@@ -148,7 +204,7 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.home, color: primaryColor, size: 26),
               onPressed: () {
                 setState(() => _selectedIndex = 1);
-              } ,
+              },
               padding: EdgeInsets.zero,
               constraints: BoxConstraints(),
             ),
@@ -173,7 +229,12 @@ class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
 
-  CustomButton({super.key, required this.icon, required this.text, this.onTap});
+  const CustomButton({
+    super.key,
+    required this.icon,
+    required this.text,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

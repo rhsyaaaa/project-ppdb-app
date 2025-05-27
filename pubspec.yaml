@@ -38,6 +38,7 @@ dependencies:
   google_sign_in: ^6.0.0
   http: ^1.4.0
   image_picker_web: ^4.0.0
+  shared_preferences: ^2.0.15
 
 dev_dependencies:
   flutter_lints: ^5.0.0

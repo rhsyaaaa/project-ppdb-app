@@ -1,4 +1,3 @@
-
 import 'package:go_router/go_router.dart';
 import 'package:ppdb_app/presentation/page/forgot_password.dart';
 import 'package:ppdb_app/presentation/page/home.dart';
@@ -11,39 +10,43 @@ import 'package:ppdb_app/presentation/page/test.dart';
 part 'rout_name.dart';
 
 final appRoute = [
- GoRoute(
+  GoRoute(
     path: '/home',
     name: Routes.home,
-    builder: (context, state) =>  HomePage(),
+    builder: (context, state) => HomePage(),
   ),
-    GoRoute(
-      path: '/login',
-      name: Routes.login,
-      builder: (context, state) => LoginPage(),
-    ),
-    GoRoute(
-      path: '/register',
-      name: Routes.register,
-      builder: (context, state) => RegisterPage(),
-    ),
-    GoRoute(
-       path: "/forgot-password",
+  GoRoute(
+    path: '/login',
+    name: Routes.login,
+    builder: (context, state) => LoginPage(),
+  ),
+  GoRoute(
+    path: '/register',
+    name: Routes.register,
+    builder: (context, state) => RegisterPage(),
+  ),
+  GoRoute(
+    path: "/forgot-password",
     name: Routes.forgotPassword,
     builder: (context, state) => ForgotPasswordPage(),
-    ),
-    GoRoute(
-      path: "/profile",
-      name: Routes.profile,
-      builder: (context, state) => ProfilePage(),
-    ),
-    GoRoute(
-      path: "/pendaftaran",
-      name: Routes.pendaftaran,
-      builder: (context, state) => PendaftaranPage(),
-    ),
-    GoRoute(
-      path: '/test',
-      name: Routes.test,
-      builder: (context, state) => TestPage(),
-      )
+  ),
+  GoRoute(
+    path: "/profile",
+    name: Routes.profile,
+    builder: (context, state) => ProfilePage(),
+  ),
+  GoRoute(
+    path: "/pendaftaran",
+    name: Routes.pendaftaran,
+    builder: (context, state) => PendaftaranPage(),
+  ),
+ GoRoute(
+  path: '/test',
+  name: Routes.test,
+  builder: (context, state) {
+    final idSiswa = state.uri.queryParameters['id'];
+    return TestPage(idSiswa: idSiswa); // idSiswa nullable
+  },
+),
+
 ];
